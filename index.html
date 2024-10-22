@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coin Tap with Milestone Progress & Boost</title>
+  <style>
+    body {
+      background: linear-gradient(145deg, black, yellow);
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 400px;
+      margin: 50px auto;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      color: black;
+      position: relative;
+      z-index: 2;
+    }
+
+    .coin-section {
+      position: relative;
+    }
+
+    .coin {
+      width: 150px;
+      height: 150px;
+      background-image: url('https://cdn.glitch.global/d15f766a-ac8c-42bb-a4df-84072196794e/Picsart_24-09-15_16-31-09-188.png?v=1726398159767');
+      background-size: cover;
+      margin: 20px auto;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .gold-text {
+      font-size: 2.5em;
+    }
+
+    .stats {
+      font-size: 1.2em;
+      margin: 20px 0;
+    }
+
+    .links {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+    }
+
+    .link-item {
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      font-size: 1.5em;
+      background: #FFD700;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .link-item:hover {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .join-squad {
+      background-color: #333;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+      text-decoration: none;
+      margin: 20px auto;
+      font-size: 1.2em;
+    }
+
+    .join-squad:hover {
+      background-color: #555;
+    }
+
+    .loading-bar-container {
+      position: relative;
+      width: 100%;
+      height: 30px;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 15px;
+      margin: 20px auto;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .loading-bar {
+      position: absolute;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, gold, #FFD700, orange);
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(255, 255, 0, 0.8);
+      transition: width 0.5s ease;
+    }
+
+    .coin-add, .energy-subtract {
+      position: absolute;
+      font-size: 1.5em;
+      opacity: 0;
+      animation: fadeAndFloat 1s forwards;
+      pointer-events: none;
+    }
+
+    .coin-add.multiple, .energy-subtract.multiple {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: fadeAndFloatMultiple 1s forwards;
+    }
+
+    .coin-add {
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+    }
+
+    .energy-subtract {
+      top: 80%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+    }
+
+    @keyframes fadeAndFloat {
+      0% {
+        transform: translate(-50%, 0);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -40px);
+        opacity: 0;
+      }
+    }
+
+    @keyframes fadeAndFloatMultiple {
+      0% {
+        transform: translate(-50%, 0);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -100px);
+        opacity: 0;
+      }
+    }
+
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .stars span {
+      position: absolute;
+      display: block;
+      width: 2px;
+      height: 2px;
+      background: white;
+      box-shadow: 0 0 5px white;
+      animation: moveStars 5s linear infinite;
+    }
+
+    @keyframes moveStars {
+      0% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh);
+        opacity: 0;
+      }
+    }
+
+    .milestone-emoji {
+      font-size: 2em;
+      margin-top: 10px;
+    }
+
+    /* Boost Glow Effect */
+    .boost-glow {
+      box-shadow: 0 0 20px 10px yellow;
+      transition: box-shadow 0.3s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="stars" id="starBackground"></div>
+
+  <div class="container">
+    <a href="https://t.me/DarkHackerCesi" class="join-squad">Kanala qoşulun</a> <!-- Moved Join Squad to the top -->
+
+    <div class="coin-section">
+      <div class="coin" id="coin" onclick="handleTap()"></div>
+      <div id="coinAddText" class="coin-add">+12</div>
+      <div id="energySubtractText" class="energy-subtract">-3</div>
+      <div class="gold-text"><span id="coinValue">0</span> 🏆 Gold</div>
+      <div id="milestoneEmoji" class="milestone-emoji"></div>
+    </div>
+
+    <div class="stats">
+      ⚡ <span id="energyValue">6500</span> / 6500
+    </div>
+
+    <div class="loading-bar-container">
+      <div id="loadingBar" class="loading-bar"></div>
+    </div>
+
+    <div class="links">
+      <a href="#" class="link-item" target="_blank">🧸 əyləclər</a>
+      <a href="#" class="link-item" target="_blank">💰Qazanmaq</a>
+      <a id="boostBtn" href="#" class="link-item" onclick="applyBoost()">🚀 Gücləndirin</a>
+    </div>
+  </div>
+
+  <script>
+    let coinValue = 0;  // Reset to zero
+    let energyValue = 6500; // Set energy to 6500
+    const energyLimit = 6500;
+    let currentProgress = 0;
+    let boostActive = false;
+    let milestoneReached = false;
+    let milestones = [500, 5000, 500000, 1000000000]; // Milestones for Bronze, Silver, Gold, and Diamond
+    let currentMilestoneIndex = 0;
+
+    document.getElementById('coinValue').textContent = coinValue;
+    document.getElementById('energyValue').textContent = energyValue;
+
+    // Milestone emojis based on coin count
+    function updateMilestoneEmoji(coinValue) {
+      const milestoneEmoji = document.getElementById('milestoneEmoji');
+      if (coinValue >= milestones[currentMilestoneIndex]) {
+        if (currentMilestoneIndex === 3) {
+          milestoneEmoji.textContent = "💎 Elmas";
+        } else if (currentMilestoneIndex === 2) {
+          milestoneEmoji.textContent = "🥇 Altın";
+        } else if (currentMilestoneIndex === 1) {
+          milestoneEmoji.textContent = "🥈 Gümüş";
+        } else if (currentMilestoneIndex === 0) {
+          milestoneEmoji.textContent = "🥉 Bürüncn";
+        }
+
+        // Reset loading bar and prepare for next milestone
+        if (currentMilestoneIndex < milestones.length - 1) {
+          currentMilestoneIndex++;
+          currentProgress = 0;
+          loadingBar.style.width = '0%';
+        }
+      }
+    }
+
+    setInterval(() => {
+      if (energyValue < energyLimit) {
+        energyValue += 1;
+        document.getElementById('energyValue').textContent = energyValue;
+      }
+    }, 1000); // +1 energy per second
+
+    function handleTap() {
+      if (energyValue >= 3) {
+        coinValue += boostActive ? 200 : 12; // If boost is active, 200 coins, else 12 coins
+        energyValue -= 3;
+        document.getElementById('coinValue').textContent = coinValue;
+        document.getElementById('energyValue').textContent = energyValue;
+
+        const coinAddText = document.getElementById('coinAddText');
+        const energySubtractText = document.getElementById('energySubtractText');
+        coinAddText.classList.add('multiple');
+        energySubtractText.classList.add('multiple');
+
+        setTimeout(() => {
+          coinAddText.classList.remove('multiple');
+          energySubtractText.classList.remove('multiple');
+        }, 1000);
+
+        // Update loading bar and milestones
+        increaseLoadingBar(1);
+        updateMilestoneEmoji(coinValue);
+      }
+    }
+
+    function increaseLoadingBar(amount) {
+      currentProgress += amount;
+      if (currentProgress >= 100) {
+        currentProgress = 100;
+        activateBoost(); // Activate boost when loading is complete
+      }
+      const percentage = (currentProgress / 100) * 100;
+      loadingBar.style.width = `${percentage}%`;
+    }
+
+    function activateBoost() {
+      const boostBtn = document.getElementById('boostBtn');
+      boostBtn.classList.add('boost-glow');
+      boostBtn.onclick = () => {
+        if (currentProgress === 100) { // Ensure loading bar is fully complete before boosting
+          coinValue += 300;  // Add 300 coins when boost is clicked
+          document.getElementById('coinValue').textContent = coinValue;
+          currentProgress = 0;  // Reset the loading bar
+          loadingBar.style.width = '0%';
+          boostBtn.classList.remove('boost-glow');  // Remove the glow after boosting
+        }
+      };
+    }
+
+    // Star animation setup
+    function createStars() {
+      const starContainer = document.getElementById('starBackground');
+      for (let i = 0; i < 50; i++) {
+        let star = document.createElement('span');
+        let size = Math.random() * 2 + 1;
+        let left = Math.random() * 100;
+        let delay = Math.random() * 5;
+
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.left = `${left}%`;
+        star.style.animationDelay = `${delay}s`;
+
+        starContainer.appendChild(star);
+      }
+    }
+
+    createStars();
+  </script>
+
+</body>
+</html>
